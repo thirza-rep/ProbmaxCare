@@ -3,52 +3,88 @@ import axiosClient from "../axios-client";
 import { Link } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 
-const questions = [
-  "Saya merasa tegang atau cemas.",
-  "Saya merasa sedih atau murung.",
-  "Saya merasa mudah marah atau tersinggung.",
-  "Saya merasa sulit berkonsentrasi.",
-  "Saya merasa tidak berharga atau tidak berguna.",
-  "Saya merasa sulit tidur atau tidur tidak nyenyak.",
-  "Saya merasa lelah atau tidak bertenaga.",
-  "Saya kehilangan minat pada hal-hal yang biasanya saya sukai.",
-  "Saya merasa putus asa tentang masa depan.",
-  "Saya merasa sulit untuk rileks."
+const questionnaire = [
+  {
+    question: "Bagaimana perasaan Anda dalam 7 hari terakhir?",
+    options: [
+      { label: "Merasa bahagia dan seimbang", score: 0 },
+      { label: "Baik-baik saja, namun kadang merasa bosan", score: 1 },
+      { label: "Lelah, kurang semangat, atau mudah tersinggung", score: 2 },
+      { label: "Sering cemas atau khawatir berlebihan", score: 3 }
+    ]
+  },
+  {
+    question: "Apakah Anda memiliki seseorang untuk diajak berbicara saat sedang stres atau sedih?",
+    options: [
+      { label: "Ya, saya punya teman/keluarga yang bisa dipercaya", score: 0 },
+      { label: "Hanya kadang-kadang, tidak selalu", score: 1 },
+      { label: "Tidak, saya cenderung memendam semuanya sendiri", score: 2 },
+      { label: "Saya lebih suka menulis atau mengalihkan perhatian ke hobi", score: 3 }
+    ]
+  },
+  {
+    question: "Berapa jam tidur Anda rata-rata setiap malam?",
+    options: [
+      { label: "Kurang dari 5 jam", score: 3 },
+      { label: "5 - 6 jam", score: 2 },
+      { label: "7 - 8 jam", score: 1 },
+      { label: "Lebih dari 8 jam", score: 0 }
+    ]
+  },
+  {
+    question: "Apa yang biasanya Anda lakukan untuk mengatasi stres?",
+    options: [
+      { label: "Olahraga atau melakukan aktivitas fisik", score: 0 },
+      { label: "Bermeditasi, membaca, atau melakukan hobi", score: 1 },
+      { label: "Menonton film, bermain game, atau makan camilan", score: 2 },
+      { label: "Tidak melakukan apa pun, hanya membiarkan stres menumpuk", score: 3 }
+    ]
+  },
+  {
+    question: "Seberapa sering Anda merasa kewalahan dengan rutinitas sehari-hari?",
+    options: [
+      { label: "Jarang atau tidak pernah", score: 0 },
+      { label: "Kadang-kadang", score: 1 },
+      { label: "Beberapa kali dalam seminggu", score: 2 },
+      { label: "Hampir setiap hari", score: 3 }
+    ]
+  },
+  {
+    question: "Apakah Anda merasa tertekan dengan tugas-tugas perkuliahan?",
+    options: [
+      { label: "Tidak pernah, saya menikmatinya", score: 0 },
+      { label: "Sesekali saja", score: 1 },
+      { label: "Sering merasa lelah", score: 2 },
+      { label: "Sangat tertekan dan ingin berhenti", score: 3 }
+    ]
+  }
 ];
 
-const optionLabels = ["Tidak Pernah", "Jarang", "Sering", "Selalu"];
-
-// Helper to determine score color/category locally (sync with backend logic preferably)
+// Helper to determine score color/category
 const getResultCategory = (score) => {
-    if (score <= 10) return { category: 'Normal', color: 'bg-green-100 text-green-800', border: 'border-green-500', icon: '😊' };
-    if (score <= 20) return { category: 'Stres Ringan', color: 'bg-yellow-100 text-yellow-800', border: 'border-yellow-500', icon: '😐' };
-    if (score <= 30) return { category: 'Stres Sedang', color: 'bg-orange-100 text-orange-800', border: 'border-orange-500', icon: '😟' };
+    // adjusted threshold for 6 questions (max score 18)
+    if (score <= 4) return { category: 'Normal', color: 'bg-green-100 text-green-800', border: 'border-green-500', icon: '😊' };
+    if (score <= 8) return { category: 'Stres Ringan', color: 'bg-yellow-100 text-yellow-800', border: 'border-yellow-500', icon: '😐' };
+    if (score <= 13) return { category: 'Stres Sedang', color: 'bg-orange-100 text-orange-800', border: 'border-orange-500', icon: '😟' };
     return { category: 'Stres Berat', color: 'bg-red-100 text-red-800', border: 'border-red-500', icon: '😰' };
 };
 
 export default function DailyFeedback() {
     const { setNotification } = useStateContext();
-    const [answers, setAnswers] = useState(Array(10).fill(null)); // Initialize with null
+    const [answers, setAnswers] = useState(Array(questionnaire.length).fill(null));
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
-    const [step, setStep] = useState(0); // Current question index
     const [submitted, setSubmitted] = useState(false);
 
-    const handleOptionChange = (value) => {
+    const handleOptionChange = (qIndex, score) => {
         const newAnswers = [...answers];
-        newAnswers[step] = value;
+        newAnswers[qIndex] = score;
         setAnswers(newAnswers);
-        
-        // Auto advance after short delay
-        if (step < 9) {
-            setTimeout(() => setStep(s => s + 1), 200);
-        }
     };
 
     const submitFeedback = (ev) => {
         ev.preventDefault();
         
-        // Check if all answered
         if (answers.includes(null)) {
             alert("Harap jawab semua pertanyaan.");
             return;
@@ -119,72 +155,63 @@ export default function DailyFeedback() {
         )
     }
 
-    const progress = ((step) / 10) * 100;
-
     return (
-        <div className="max-w-xl mx-auto py-8">
-            <h1 className="text-3xl font-bold text-center text-primary-dark mb-2">Cek Kesehatan Mental</h1>
-            <p className="text-center text-gray-500 mb-8">Jawab jujur sesuai perasaanmu hari ini.</p>
-            
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-8">
-                <div className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${((step + (answers[step] !== null ? 1 : 0)) / 10) * 100}%` }}></div>
-            </div>
+        <div className="min-h-screen bg-[#F0F4F8] -mt-8 -mx-4 sm:-mx-8 p-4 sm:p-10">
+            <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-10">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-sm mb-4 text-primary">
+                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h1 className="text-3xl font-black text-gray-800 mb-3 tracking-tight">Cek Kesehatan Mental</h1>
+                    <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-sm mx-auto">
+                        Jawab pertanyaan di bawah dengan jujur untuk mengetahui tingkat stres Anda hari ini.
+                    </p>
+                </div>
 
-            <div className="card min-h-[400px] flex flex-col justify-between relative shadow-lg">
-                 {/* Navigation Arrows (Optional, simplified for now) */}
-                 
-                 <div className="flex-1 flex flex-col justify-center">
-                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 block">Pertanyaan {Math.min(step + 1, 10)} dari 10</span>
-                     <h2 className="text-2xl font-medium text-gray-800 mb-8 leading-snug">
-                         {questions[step]}
-                     </h2>
+                <form onSubmit={submitFeedback} className="card bg-white shadow-2xl border-none p-8 sm:p-12 rounded-[3rem] space-y-12 animate-fade-in-up">
+                    {questionnaire.map((q, qIndex) => (
+                        <div key={qIndex} className="space-y-6">
+                            <h3 className="text-lg font-bold text-gray-800 leading-snug">
+                                {qIndex + 1}. {q.question}
+                            </h3>
+                            <div className="space-y-4">
+                                {q.options.map((option, oIndex) => (
+                                    <label 
+                                        key={oIndex}
+                                        className={`flex items-start gap-4 p-2 -ml-2 rounded-2xl cursor-pointer group transition-all hover:bg-gray-50`}
+                                    >
+                                        <div className="relative flex items-center mt-1 shrink-0">
+                                            <input 
+                                                type="radio"
+                                                name={`question-${qIndex}`}
+                                                value={option.score}
+                                                required
+                                                checked={answers[qIndex] === option.score}
+                                                onChange={() => handleOptionChange(qIndex, option.score)}
+                                                className="peer appearance-none w-6 h-6 border-2 border-gray-300 rounded-full checked:border-primary transition-all cursor-pointer"
+                                            />
+                                            <div className="absolute inset-0 m-auto w-3 h-3 bg-primary rounded-full scale-0 peer-checked:scale-100 transition-transform"></div>
+                                        </div>
+                                        <span className={`text-base font-medium leading-relaxed transition-colors ${
+                                            answers[qIndex] === option.score ? 'text-gray-900 font-bold' : 'text-gray-600 group-hover:text-gray-800'
+                                        }`}>
+                                            {option.label}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
 
-                     <div className="space-y-3">
-                         {optionLabels.map((label, index) => (
-                             <button
-                                 key={index}
-                                 onClick={() => handleOptionChange(index)}
-                                 className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between group ${
-                                     answers[step] === index 
-                                     ? 'border-primary bg-primary/5 text-primary' 
-                                     : 'border-gray-100 hover:border-primary/50 hover:bg-gray-50'
-                                 }`}
-                             >
-                                 <span className="font-medium">{label}</span>
-                                 {answers[step] === index && <span className="text-primary text-xl">✓</span>}
-                             </button>
-                         ))}
-                     </div>
-                 </div>
-                 
-                 <div className="flex justify-between mt-8 pt-4 border-t border-gray-100">
-                     <button 
-                        onClick={() => setStep(s => Math.max(0, s - 1))}
-                        disabled={step === 0}
-                        className={`text-gray-500 font-medium px-4 py-2 rounded hover:bg-gray-100 transition disabled:opacity-30 disabled:cursor-not-allowed`}
-                     >
-                         ← Sebelumnya
-                     </button>
-
-                     {step < 9 ? (
-                         <button 
-                            onClick={() => setStep(s => Math.min(9, s + 1))}
-                            disabled={answers[step] === null}
-                            className="bg-gray-800 text-white px-6 py-2 rounded-full font-medium hover:bg-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                         >
-                             Lanjut →
-                         </button>
-                     ) : (
-                         <button 
-                            onClick={submitFeedback}
+                    <div className="pt-8">
+                        <button 
                             disabled={loading || answers.includes(null)}
-                            className="btn-primary"
-                         >
-                             {loading ? 'Menyimpan...' : 'Selesai & Lihat Hasil'}
-                         </button>
-                     )}
-                 </div>
+                            className="btn-primary w-full py-5 text-xl font-black shadow-xl shadow-primary/40 rounded-3xl"
+                        >
+                            {loading ? 'Menyimpan...' : 'Selesai & Lihat Hasil ✨'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
