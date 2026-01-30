@@ -54,8 +54,16 @@ export default function DailyFeedback() {
             return;
         }
 
+        const total_score = answers.reduce((a, b) => a + (b || 0), 0);
+        const cat = getResultCategory(total_score);
+
         setLoading(true);
-        axiosClient.post('/daily-feedback', { answers })
+        axiosClient.post('/daily-feedback', {
+            total_score,
+            stress_level: cat.category,
+            color: cat.color,
+            answers_json: answers
+        })
             .then(({data}) => {
                 setLoading(false);
                 setResult(data);
@@ -127,7 +135,7 @@ export default function DailyFeedback() {
                  {/* Navigation Arrows (Optional, simplified for now) */}
                  
                  <div className="flex-1 flex flex-col justify-center">
-                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 block">Pertanyaan {step + 1} dari 10</span>
+                     <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 block">Pertanyaan {Math.min(step + 1, 10)} dari 10</span>
                      <h2 className="text-2xl font-medium text-gray-800 mb-8 leading-snug">
                          {questions[step]}
                      </h2>
