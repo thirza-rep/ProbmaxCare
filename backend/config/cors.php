@@ -25,6 +25,7 @@ return [
         'https://www.probmaxcare.site',
         'https://probmaxcare.web.app',
         'https://probmaxcare.firebaseapp.com',
+        'https://probmaxcare-frontend.vercel.app',
     ],
 
     'allowed_origins_patterns' => [],
