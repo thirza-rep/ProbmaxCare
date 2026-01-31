@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,9 +15,13 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('email')->unique();
             $table->string('password');
-            $table->integer('role_id');
+            $table->foreignId('role_id')->constrained()->onDelete('cascade');
             $table->string('reset_token')->nullable();
+            $table->rememberToken();
             $table->timestamps();
+
+            // Indexes for performance
+            $table->index('email');
         });
     }
 
