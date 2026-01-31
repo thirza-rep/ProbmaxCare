@@ -30,10 +30,8 @@ export default function Login() {
         const response = err.response;
         if (response && response.status === 422) {
           setErrors(response.data.errors || { general: [response.data.message] });
-        } else if (response && response.status === 401) {
-          setErrors({ general: [response.data.message || 'Username atau password salah.'] });
         } else {
-          setErrors({ general: [response?.data?.message || 'Terjadi kesalahan sistem. Silakan coba lagi.'] });
+          setErrors({ general: ['Terjadi kesalahan. Silakan coba lagi.'] });
         }
       });
   };

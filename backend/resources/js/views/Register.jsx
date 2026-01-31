@@ -1,12 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import axiosClient from "../axios-client";
 import { useStateContext } from "../contexts/ContextProvider";
 
-export default function Login() {
+export default function Register() {
   const usernameRef = useRef();
+  const emailRef = useRef();
   const passwordRef = useRef();
-  const { setUser, setToken } = useStateContext();
+  const passwordConfirmationRef = useRef();
+  const { setNotification } = useStateContext();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -17,29 +20,29 @@ export default function Login() {
 
     const payload = {
       username: usernameRef.current.value,
+      email: emailRef.current.value,
       password: passwordRef.current.value,
+      password_confirmation: passwordConfirmationRef.current.value,
     };
 
-    axiosClient.post('/login', payload)
-      .then(({ data }) => {
-        setUser(data.user);
-        setToken(data.token);
+    axiosClient.post('/register', payload)
+      .then(() => {
+        setNotification("Registrasi berhasil! Silakan masuk dengan akun barumu. ✨");
+        navigate('/login');
       })
       .catch((err) => {
         setLoading(false);
         const response = err.response;
         if (response && response.status === 422) {
-          setErrors(response.data.errors || { general: [response.data.message] });
-        } else if (response && response.status === 401) {
-          setErrors({ general: [response.data.message || 'Username atau password salah.'] });
+          setErrors(response.data.errors);
         } else {
-          setErrors({ general: [response?.data?.message || 'Terjadi kesalahan sistem. Silakan coba lagi.'] });
+          setErrors({ general: ['Terjadi kesalahan. Silakan coba lagi.'] });
         }
       });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-light via-background to-secondary-light px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary-light via-background to-primary-light px-4 py-12">
       <div className="w-full max-w-md animate-fade-in-up">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
@@ -47,13 +50,13 @@ export default function Login() {
             <span className="text-3xl">🌿</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">ProbmaxCare</h1>
-          <p className="text-gray-600">Edukasi Kesehatan Mental Mahasiswa</p>
+          <p className="text-gray-600">Mulai perjalanan kesehatan mentalmu</p>
         </div>
 
-        {/* Login Card */}
+        {/* Register Card */}
         <div className="card shadow-xl">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Masuk</h2>
-          <p className="text-gray-500 mb-6">Selamat datang kembali! 👋</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Daftar Akun</h2>
+          <p className="text-gray-500 mb-6">Bergabunglah dengan kami! 🚀</p>
 
           {errors && (
             <div className="alert-error mb-6 animate-fade-in-down">
@@ -70,12 +73,23 @@ export default function Login() {
 
           <form onSubmit={onSubmit} className="space-y-5">
             <div>
-              <label className="label">Username atau Email</label>
+              <label className="label">Username</label>
               <input
                 ref={usernameRef}
                 type="text"
                 className="input-field"
-                placeholder="Masukkan username atau email"
+                placeholder="Pilih username unik"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Email</label>
+              <input
+                ref={emailRef}
+                type="email"
+                className="input-field"
+                placeholder="email@example.com"
                 required
               />
             </div>
@@ -86,7 +100,18 @@ export default function Login() {
                 ref={passwordRef}
                 type="password"
                 className="input-field"
-                placeholder="Masukkan password"
+                placeholder="Minimal 8 karakter"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="label">Konfirmasi Password</label>
+              <input
+                ref={passwordConfirmationRef}
+                type="password"
+                className="input-field"
+                placeholder="Ketik ulang password"
                 required
               />
             </div>
@@ -102,16 +127,16 @@ export default function Login() {
                   Memproses...
                 </span>
               ) : (
-                'Masuk'
+                'Daftar Sekarang'
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600 text-sm">
-              Belum punya akun?{' '}
-              <Link to="/register" className="text-primary font-semibold hover:text-primary-dark hover:underline transition-colors">
-                Daftar di sini
+              Sudah punya akun?{' '}
+              <Link to="/login" className="text-primary font-semibold hover:text-primary-dark hover:underline transition-colors">
+                Masuk di sini
               </Link>
             </p>
           </div>
@@ -120,7 +145,7 @@ export default function Login() {
         {/* Footer Note */}
         <div className="mt-6 text-center">
           <p className="text-gray-500 text-xs">
-            Dengan masuk, kamu menyetujui untuk menjaga privasi dan keamanan akunmu.
+            Dengan mendaftar, kamu menyetujui untuk menjaga privasi dan keamanan data pribadimu.
           </p>
         </div>
       </div>
