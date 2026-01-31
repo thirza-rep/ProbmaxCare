@@ -16,3 +16,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return response()->json(['message' => 'ProbmaxCare Backend is Running']);
 });
+
+Route::get('/hello', function () {
+    return response()->json([
+        'message' => 'Hello from Laravel!',
+        'routes_loaded' => true,
+        'php_version' => phpversion()
+    ]);
+});
