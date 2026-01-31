@@ -1,27 +1,53 @@
 <?php
 
-// ULTRA SIMPLE TEST - Does Vercel execute PHP at all?
-header('Content-Type: application/json');
-echo json_encode([
-    'status' => 'PHP IS ALIVE!',
-    'timestamp' => date('Y-m-d H:i:s'),
-    'php_version' => phpversion(),
-    'request_uri' => $_SERVER['REQUEST_URI'] ?? 'unknown',
-    'script_name' => $_SERVER['SCRIPT_NAME'] ?? 'unknown'
-]);
-exit;
-
-// Setup writable bootstrap cache for Vercel serverless
+// Setup bootstrap cache
 $bootstrapCache = '/tmp/bootstrap/cache';
 if (!is_dir($bootstrapCache)) {
     mkdir($bootstrapCache, 0755, true);
 }
-// Create cache subdirectory that Laravel expects
 if (!is_dir($bootstrapCache . '/cache')) {
     mkdir($bootstrapCache . '/cache', 0755, true);
 }
-
-// Define bootstrap cache path for Laravel
 define('LARAVEL_BOOTSTRAP_CACHE', $bootstrapCache);
 
-require __DIR__ . '/../public/index.php';
+// Bootstrap Laravel manually
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
+
+// MANUAL SIMPLE ROUTE - Bypass RouteServiceProvider
+$request = Illuminate\Http\Request::capture();
+
+// Check if this is API route
+if (str_starts_with($request->getPathInfo(), '/api/')) {
+    header('Content-Type: application/json');
+
+    if ($request->getPathInfo() === '/api/ping') {
+        echo json_encode([
+            'message' => 'PONG from manual Laravel route!',
+            'laravel_version' => app()->version(),
+            'environment' => app()->environment()
+        ]);
+        exit;
+    }
+
+    if ($request->getPathInfo() === '/api/test-db') {
+        try {
+            DB::connection()->getPdo();
+            echo json_encode([
+                'message' => 'Database Connected!',
+                'database' => DB::connection()->getDatabaseName()
+            ]);
+        } catch (\Exception $e) {
+            echo json_encode([
+                'message' => 'Database Error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+        exit;
+    }
+}
+
+// For other routes, use normal Laravel
+$response = $kernel->handle($request);
+$response->send();
+$kernel->terminate($request, $response);
