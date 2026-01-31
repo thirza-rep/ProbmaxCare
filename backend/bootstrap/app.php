@@ -15,6 +15,9 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Override bootstrap cache path for Vercel serverless (read-only filesystem)
+$app->useBootstrapPath(defined('LARAVEL_BOOTSTRAP_CACHE') ? LARAVEL_BOOTSTRAP_CACHE : $app->bootstrapPath());
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
