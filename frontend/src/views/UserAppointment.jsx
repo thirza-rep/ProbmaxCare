@@ -59,11 +59,11 @@ export default function UserAppointment() {
 
     return (
         <div className="space-y-8 animate-fade-in-up">
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-800">Janji Konseling 🤝</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Janji Konseling 🤝</h1>
                  {/* Only Consultants/Admin see link to manage schedules */}
                  {user.role_id !== 3 && (
-                    <Link to="/schedules" className="btn-secondary text-sm">
+                    <Link to="/schedules" className="btn-secondary btn-sm">
                         Atur Jadwal Saya
                     </Link>
                 )}
@@ -131,36 +131,47 @@ export default function UserAppointment() {
                     
                     {appointments.length === 0 ? (
                         <div className="card text-center py-12">
-                            <div className="text-4xl mb-4">📅</div>
-                            <p className="text-gray-500">Belum ada janji temu yang dibuat.</p>
+                            <div className="text-4xl mb-4 text-gray-300">📅</div>
+                            <p className="text-gray-500 font-medium">Belum ada janji temu yang dibuat.</p>
+                            <p className="text-xs text-gray-400 mt-1">Gunakan form di samping untuk mulai.</p>
                         </div>
                     ) : (
-                        appointments.map(appt => (
-                            <div key={appt.id} className="card flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 hover:border-primary/30 transition-colors border border-transparent">
-                                <div className="flex gap-4 items-start">
-                                    <div className="bg-blue-100 text-primary w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold shrink-0">
-                                        {new Date(appt.appointment_date).getDate()}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-800 tex-lg">
-                                            {new Date(appt.appointment_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </h3>
-                                        <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                                            <span className="flex items-center gap-1">⏰ {appt.appointment_time}</span>
-                                            <span className="flex items-center gap-1">📍 {appt.location}</span>
+                        <div className="grid gap-4">
+                            {appointments.map(appt => (
+                                <div key={appt.id} className="card p-5 hover:border-primary/30 transition-all border border-transparent shadow-sm hover:shadow-md">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div className="flex gap-4 items-center">
+                                            <div className="bg-primary/10 text-primary w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 shadow-sm border border-primary/5">
+                                                {new Date(appt.appointment_date).getDate()}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-gray-800 text-base sm:text-lg truncate">
+                                                    {new Date(appt.appointment_date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                                </h3>
+                                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 mt-1 font-medium">
+                                                    <span className="flex items-center gap-1.5"><span className="text-primary opacity-50 text-[10px]">●</span> {appt.appointment_time}</span>
+                                                    <span className="flex items-center gap-1.5"><span className="text-secondary opacity-50 text-[10px]">●</span> {appt.location}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="text-xs text-gray-400 mt-2">
-                                            WhatsApp: {appt.whatsapp_number}
+                                        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-gray-50">
+                                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block sm:hidden">Status</div>
+                                            <span className="bg-green-100/80 text-green-700 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200 shadow-sm">
+                                                Terjadwal
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-gray-50 flex flex-col sm:flex-row justify-between gap-3 italic">
+                                        <div className="text-[10px] text-gray-400 font-medium">
+                                            WhatsApp Terdaftar: <span className="text-gray-600 font-bold">{appt.whatsapp_number}</span>
+                                        </div>
+                                        <div className="text-[10px] text-gray-400 font-medium">
+                                            ID Janji: <span className="text-gray-300">#{appt.id}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-4 sm:mt-0 self-end sm:self-center">
-                                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
-                                        Terjadwal
-                                    </span>
-                                </div>
-                            </div>
-                        ))
+                            ))}
+                        </div>
                     )}
                 </div>
             </div>

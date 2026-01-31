@@ -60,43 +60,43 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-24">
         <div className="text-center animate-fade-in-up">
           <div className="inline-block mb-4">
-            <span className="bg-primary/10 text-primary px-3 py-1 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold">
+            <span className="bg-primary/10 text-primary px-3 py-1 md:px-4 md:py-2 rounded-full text-[10px] md:text-sm font-bold uppercase tracking-wider">
               Platform Edukasi Kesehatan Mental
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-gray-800 mb-4 md:mb-6 leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-800 mb-6 leading-[1.1]">
             Hai, <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Mahasiswa!</span> 👋
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-6 md:mb-8 max-w-3xl mx-auto leading-relaxed px-2">
-            Selamat datang di <strong>ProbmaxCare</strong>! Kami di sini untuk mendukungmu. 
+          <p className="text-base md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed px-4">
+            Selamat datang di <strong className="text-primary-dark">ProbmaxCare</strong>! Kami di sini untuk mendukungmu. 
             Jelajahi fitur-fitur seru dan mari bagi berbagai cerita dengan kami. 
             Ingat, kamu nggak sendirian! 💚
           </p>
-          <div className="flex gap-3 md:gap-4 justify-center flex-wrap">
-            <Link to="/register" className="btn-primary btn-lg shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 text-sm md:text-base">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link to="/register" className="btn-primary btn-lg w-full sm:w-auto shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 text-sm md:text-base">
               Mulai Sekarang 🚀
             </Link>
-            <a href="#features" className="btn-outline btn-lg text-sm md:text-base">
+            <a href="#features" className="btn-outline btn-lg w-full sm:w-auto text-sm md:text-base">
               Lihat Fitur
             </a>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 md:gap-6 max-w-2xl mx-auto mt-10 md:mt-16">
-            <div className="text-center p-2">
+          <div className="grid grid-cols-3 gap-2 md:gap-8 max-w-2xl mx-auto mt-12 md:mt-20">
+            <div className="text-center p-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white shadow-sm">
               <div className="text-2xl md:text-4xl font-black text-primary">4</div>
-              <div className="text-xs md:text-sm text-gray-500 mt-1">Fitur Utama</div>
+              <div className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tighter sm:tracking-normal mt-1">Fitur</div>
             </div>
-            <div className="text-center p-2 border-x border-gray-100">
+            <div className="text-center p-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white shadow-sm">
               <div className="text-2xl md:text-4xl font-black text-secondary">24/7</div>
-              <div className="text-xs md:text-sm text-gray-500 mt-1">AI Support</div>
+              <div className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tighter sm:tracking-normal mt-1">Chat AI</div>
             </div>
-            <div className="text-center p-2">
+            <div className="text-center p-3 rounded-2xl bg-white/50 backdrop-blur-sm border border-white shadow-sm">
               <div className="text-2xl md:text-4xl font-black text-accent-green">100%</div>
-              <div className="text-xs md:text-sm text-gray-500 mt-1">Gratis</div>
+              <div className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-tighter sm:tracking-normal mt-1">Gratis</div>
             </div>
           </div>
         </div>

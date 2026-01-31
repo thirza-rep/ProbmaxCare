@@ -145,14 +145,14 @@ export default function ConsultantAppointments() {
             <div key={appointment.id} className="card hover:shadow-lg transition-shadow">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 {/* Left: Info */}
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0">
+                <div className="flex-1 w-full">
+                  <div className="flex items-center gap-4 mb-5 pb-4 border-b border-gray-50 md:border-0 md:pb-0">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl flex-shrink-0 shadow-sm">
                       {appointment.user?.username?.charAt(0).toUpperCase() || 'M'}
                     </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800">{appointment.user?.username || 'Mahasiswa'}</h3>
-                      <p className="text-sm text-gray-500">{appointment.user?.email}</p>
+                    <div className="truncate">
+                      <h3 className="font-bold text-gray-800 text-lg truncate">{appointment.user?.username || 'Mahasiswa'}</h3>
+                      <p className="text-xs text-gray-500 truncate">{appointment.user?.email}</p>
                     </div>
                   </div>
 
@@ -257,8 +257,10 @@ export default function ConsultantAppointments() {
                 </div>
 
                 {/* Right: Status & Actions */}
-                <div className="flex flex-col gap-2 md:items-end">
-                  {getStatusBadge(appointment.status)}
+                <div className="flex flex-row md:flex-col gap-3 items-center md:items-end justify-between md:justify-start w-full md:w-auto pt-4 md:pt-0 border-t md:border-0 border-gray-50">
+                  <div className="md:mb-2">
+                    {getStatusBadge(appointment.status)}
+                  </div>
                   
                   {appointment.status === 'pending' && (
                     <div className="flex flex-col gap-2 mt-2">
