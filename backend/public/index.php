@@ -59,12 +59,23 @@ require __DIR__ . '/../vendor/autoload.php';
 |
 */
 
+error_log("PUBLIC INDEX: Starting Laravel bootstrap");
+
 $app = require_once __DIR__ . '/../bootstrap/app.php';
+
+error_log("PUBLIC INDEX: App loaded");
 
 $kernel = $app->make(Kernel::class);
 
-$response = $kernel->handle(
-    $request = Request::capture()
-)->send();
+error_log("PUBLIC INDEX: Kernel created");
+
+$request = Request::capture();
+error_log("PUBLIC INDEX: Request captured - URI: " . $request->getRequestUri() . " | Path: " . $request->getPathInfo());
+
+$response = $kernel->handle($request);
+
+error_log("PUBLIC INDEX: Response status: " . $response->getStatusCode());
+
+$response->send();
 
 $kernel->terminate($request, $response);
