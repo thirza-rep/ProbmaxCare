@@ -10,6 +10,9 @@ if (!is_dir($bootstrapCache . '/cache')) {
 }
 define('LARAVEL_BOOTSTRAP_CACHE', $bootstrapCache);
 
+// CRITICAL: Load Composer autoloader FIRST!
+require __DIR__ . '/../vendor/autoload.php';
+
 // Bootstrap Laravel manually
 $app = require_once __DIR__ . '/../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
