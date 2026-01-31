@@ -10,55 +10,81 @@ class ChatController extends Controller
     public function chat(Request $request)
     {
         $request->validate([
-            'message' => 'required|string'
+            'message' => 'required|string',
+            'history' => 'nullable|array'
         ]);
 
+        $user = $request->user();
         $userMessage = $request->message;
-        
-        // Get Gemini API Key from .env
         $apiKey = env('GEMINI_API_KEY');
-        
+
         if (!$apiKey) {
             return response()->json([
                 'message' => 'Maaf, layanan AI belum dikonfigurasi. Silakan hubungi administrator.'
             ], 500);
         }
 
+        $lastCheck = \App\Models\DailyFeedback::where('user_id', $user->id)->orderBy('created_at', 'desc')->first();
+        
+        $userContext = "Nama Pengguna: {$user->username}\n";
+        if ($lastCheck) {
+            $userContext .= "Status Kesehatan Mental Terakhir (Cek Harian): {$lastCheck->stress_level} (Skor: {$lastCheck->total_score})\n";
+        } else {
+            $userContext .= "Status Kesehatan Mental Terakhir: Belum ada data.\n";
+        }
+
         // System prompt untuk konteks aplikasi
-        $systemPrompt = "Kamu adalah Probmax AI, asisten kesehatan mental untuk mahasiswa keperawatan di aplikasi ProbmaxCare. 
+        $systemPrompt = "Kamu adalah Probmax AI, asisten kesehatan mental khusus mahasiswa keperawatan di aplikasi ProbmaxCare. 
 
-Konteks Aplikasi:
-- ProbmaxCare adalah platform edukasi kesehatan mental untuk mahasiswa keperawatan
-- Fitur utama: Cek Kesehatan Harian (self-assessment), PMC Game (mood tracker), LiveChat AI (kamu), dan Buat Janji (konseling dengan dosen/psikolog)
-- Tujuan: membantu mahasiswa memahami dan mengelola kesehatan mental mereka
+KONTEKS PENGGUNA SAAT INI:
+{$userContext}
 
-Peranmu:
-1. Berikan dukungan emosional yang hangat dan empati
-2. Edukasi tentang kesehatan mental dengan bahasa yang mudah dipahami
-3. Sarankan fitur ProbmaxCare yang relevan (misalnya: jika stres, sarankan Cek Harian atau Buat Janji)
-4. Jangan diagnosa atau berikan saran medis spesifik
-5. Jika kondisi serius, sarankan untuk konsultasi profesional via fitur Buat Janji
-6. Gunakan bahasa Indonesia yang ramah dan tidak kaku
-7. Jawab singkat dan to-the-point (maksimal 3-4 kalimat)
+KONTEKS APLIKASI:
+- ProbmaxCare adalah platform edukasi kesehatan mental mahasiswa keperawatan.
+- Fitur: Cek Kesehatan Harian (self-assessment), PMC Game (mood tracker), Chat AI (kamu), dan Buat Janji (konseling).
 
-PENTING: Kamu BUKAN pengganti konselor profesional, hanya memberikan dukungan awal dan edukasi umum.";
+ATURAN PERANMU:
+1. Gunakan nama pengguna ({$user->username}) agar terasa lebih personal.
+2. Jawab sesuai konteks kesehatan mental terakhir pengguna jika relevan.
+3. Berikan dukungan emosional yang hangat, empati, dan profesional.
+4. Sarankan fitur yang relevan: 'Cek Harian' jika ingin tahu kondisi, 'Buat Janji' jika butuh bicara dengan ahli.
+5. Jangan diagnosa medis. Jawab singkat dan ramah (maks 3-4 kalimat).
+6. Gunakan Bahasa Indonesia yang sopan namun tetap akrab.";
+
+        // Prepare context/history for Gemini
+        $contents = [];
+        
+        // Add System Prompt as the first turn (simulated via user role if needed, or just prepended)
+        // Gemini 1.5 Flash supports system_instruction, but let's stick to content for stability or use systemPrompt
+        
+        $history = $request->history ?? [];
+        foreach ($history as $msg) {
+            if ($msg['sender'] === 'bot' || $msg['sender'] === 'user') {
+                $contents[] = [
+                    'role' => $msg['sender'] === 'bot' ? 'model' : 'user',
+                    'parts' => [['text' => $msg['text']]]
+                ];
+            }
+        }
+
+        // Add the system prompt to the first user message if history is empty, 
+        // or as a special context for the current message.
+        $actualMessage = "KONTEKS SISTEM: {$systemPrompt}\n\nUser: {$userMessage}";
+        
+        $contents[] = [
+            'role' => 'user',
+            'parts' => [['text' => $actualMessage]]
+        ];
 
         try {
             // Call Gemini API
-            $response = Http::timeout(30)->post(
+            $response = Http::timeout(40)->post(
                 "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={$apiKey}",
                 [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $systemPrompt],
-                                ['text' => "User: " . $userMessage]
-                            ]
-                        ]
-                    ],
+                    'contents' => $contents,
                     'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => 200,
+                        'temperature' => 0.8,
+                        'maxOutputTokens' => 300,
                     ]
                 ]
             );

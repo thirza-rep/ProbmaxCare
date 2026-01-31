@@ -26,7 +26,10 @@ export default function ChatAI() {
         setNewMessage("");
         setIsTyping(true);
 
-        axiosClient.post('/chat-ai', { message: newMessage })
+        axiosClient.post('/chat-ai', { 
+            message: newMessage,
+            history: messages.slice(-10) // Send last 10 messages for context
+        })
             .then(({ data }) => {
                 const botMsg = { id: Date.now() + 1, text: data.message, sender: "bot" };
                 setMessages(prev => [...prev, botMsg]);
