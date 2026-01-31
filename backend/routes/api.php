@@ -20,6 +20,26 @@ use App\Http\Controllers\AuthController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Diagnostic Routes
+Route::get('/test', function () {
+    return response()->json(['message' => 'Backend is Alive!', 'time' => now()]);
+});
+
+Route::get('/test-db', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        return response()->json([
+            'message' => 'Database Connected!',
+            'database' => \Illuminate\Support\Facades\DB::connection()->getDatabaseName()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Database Error',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -35,7 +55,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Appointments
     Route::get('/appointments', [\App\Http\Controllers\AppointmentController::class, 'index']);
     Route::post('/appointments', [\App\Http\Controllers\AppointmentController::class, 'store']);
-    
+
     // Feedback
     Route::post('/daily-feedback', [\App\Http\Controllers\FeedbackController::class, 'storeDaily']);
     Route::get('/daily-feedback', [\App\Http\Controllers\FeedbackController::class, 'indexDaily']);
@@ -55,10 +75,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::put('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'update']);
     Route::delete('/admin/users/{user}', [\App\Http\Controllers\AdminUserController::class, 'destroy']);
     Route::get('/admin/roles', [\App\Http\Controllers\AdminUserController::class, 'roles']);
-    
+
     Route::get('/dashboard/user-summary', [\App\Http\Controllers\DashboardController::class, 'userSummary']);
     Route::get('/dashboard/consultant-summary', [\App\Http\Controllers\DashboardController::class, 'consultantSummary']);
-    
+
     // Phase 5A: Consultant Features
     Route::get('/consultant/appointments', [\App\Http\Controllers\ConsultantAnalyticsController::class, 'getMyAppointments']);
     Route::put('/consultant/appointments/{id}', [\App\Http\Controllers\ConsultantAnalyticsController::class, 'updateAppointmentStatus']);
