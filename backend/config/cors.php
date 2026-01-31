@@ -22,7 +22,9 @@ return [
     'allowed_origins' => [
         'http://localhost:5173',
         'http://127.0.0.1:5173',
-        'https://www.probmaxcare.site'
+        'https://www.probmaxcare.site',
+        'https://probmaxcare.web.app',
+        'https://probmaxcare.firebaseapp.com',
     ],
 
     'allowed_origins_patterns' => [],

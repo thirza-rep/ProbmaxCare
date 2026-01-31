@@ -17,7 +17,9 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "axios": "^1.13.4",
+    "firebase": "^12.8.0",
     "react-router-dom": "^7.13.0"
   }
 }

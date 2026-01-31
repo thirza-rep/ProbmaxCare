@@ -1,23 +1,74 @@
 import axios from "axios";
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || `http://127.0.0.1:8000/api`
+  baseURL: import.meta.env.VITE_API_BASE_URL || `http://127.0.0.1:8000/api`,
+  timeout: 30000, // 30 seconds timeout
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }
 })
 
 axiosClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('ACCESS_TOKEN');
-  config.headers.Authorization = `Bearer ${token}`
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  // Log request for debugging
+  console.log('API Request:', {
+    method: config.method,
+    url: config.url,
+    data: config.data,
+    hasToken: !!token
+  });
+
   return config;
+}, (error) => {
+  console.error('Request error:', error);
+  return Promise.reject(error);
 })
 
 axiosClient.interceptors.response.use((response) => {
-  return response
+  // Log successful response for debugging
+  console.log('API Response:', {
+    url: response.config.url,
+    status: response.status,
+    data: response.data
+  });
+
+  return response;
 }, (error) => {
-  const {response} = error;
-  if (response.status === 401) {
-    localStorage.removeItem('ACCESS_TOKEN')
+  const { response } = error;
+
+  // Log error for debugging
+  console.error('API Error:', {
+    url: error.config?.url,
+    status: response?.status,
+    message: response?.data?.message || error.message,
+    data: response?.data
+  });
+
+  // Handle 401 Unauthorized
+  if (response && response.status === 401) {
+    console.warn('Unauthorized - clearing token and redirecting to login');
+    localStorage.removeItem('ACCESS_TOKEN');
+    localStorage.removeItem('USER_DATA');
+
+    // Only redirect if not already on login page
+    if (!window.location.pathname.includes('/login')) {
+      window.location.href = '/login';
+    }
   }
+
+  // Handle network errors
+  if (!response) {
+    console.error('Network error - server might be down');
+    error.message = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+  }
+
   throw error;
 })
 
 export default axiosClient;
+

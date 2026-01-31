@@ -20,19 +20,41 @@ export default function Login() {
       password: passwordRef.current.value,
     };
 
+    console.log('Login attempt with username:', payload.username);
+
     axiosClient.post('/login', payload)
       .then(({ data }) => {
+        console.log('Login successful:', data);
+
+        // Set user data first (includes role information)
         setUser(data.user);
+
+        // Set token (this will trigger redirect via DefaultLayout)
         setToken(data.token);
+
+        console.log('User and token set, should redirect to dashboard');
       })
       .catch((err) => {
         setLoading(false);
         const response = err.response;
+
+        console.error('Login error:', {
+          status: response?.status,
+          message: response?.data?.message,
+          errors: response?.data?.errors
+        });
+
         if (response && response.status === 422) {
+          // Validation errors
           setErrors(response.data.errors || { general: [response.data.message] });
         } else if (response && response.status === 401) {
+          // Authentication failed
           setErrors({ general: [response.data.message || 'Username atau password salah.'] });
+        } else if (!response) {
+          // Network error
+          setErrors({ general: ['Tidak dapat terhubung ke server. Periksa koneksi internet Anda.'] });
         } else {
+          // Other errors
           setErrors({ general: [response?.data?.message || 'Terjadi kesalahan sistem. Silakan coba lagi.'] });
         }
       });
