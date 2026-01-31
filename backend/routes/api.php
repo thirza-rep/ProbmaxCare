@@ -16,6 +16,19 @@ use App\Http\Controllers\AuthController;
 |
 */
 
+// DIAGNOSTIC ROUTES - Test if api.php is loaded
+Route::get('/ping', function () {
+    return response()->json([
+        'message' => 'PONG from api.php!',
+        'file' => 'routes/api.php',
+        'loaded' => true
+    ]);
+});
+
+Route::get('/simple-test', function () {
+    return response()->json(['status' => 'api.php is working']);
+});
+
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
