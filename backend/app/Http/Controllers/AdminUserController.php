@@ -7,14 +7,17 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use App\Traits\ApiResponser;
 
 class AdminUserController extends Controller
 {
+    use ApiResponser;
+
     public function __construct()
     {
         $this->middleware(function ($request, $next) {
             if (auth()->user()->role_id !== 1) {
-                return response()->json(['message' => 'Unauthorized. Admin only.'], 403);
+                return $this->errorResponse('Unauthorized. Admin only.', 403);
             }
             return $next($request);
         });
@@ -26,7 +29,7 @@ class AdminUserController extends Controller
     public function index()
     {
         $users = User::with('role')->get();
-        return response()->json($users);
+        return $this->successResponse($users);
     }
 
     /**
@@ -35,7 +38,7 @@ class AdminUserController extends Controller
     public function roles()
     {
         $roles = Role::all();
-        return response()->json($roles);
+        return $this->successResponse($roles);
     }
 
     /**
@@ -57,10 +60,7 @@ class AdminUserController extends Controller
             'role_id' => $data['role_id'],
         ]);
 
-        return response()->json([
-            'user' => $user->load('role'),
-            'message' => 'User created successfully'
-        ], 201);
+        return $this->successResponse($user->load('role'), 'User created successfully', 201);
     }
 
     /**
@@ -83,10 +83,7 @@ class AdminUserController extends Controller
         $user->role_id = $data['role_id'];
         $user->save();
 
-        return response()->json([
-            'user' => $user->load('role'),
-            'message' => 'User updated successfully'
-        ]);
+        return $this->successResponse($user->load('role'), 'User updated successfully');
     }
 
     /**
@@ -95,6 +92,6 @@ class AdminUserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return response()->json(['message' => 'User deleted successfully']);
+        return $this->successResponse(null, 'User deleted successfully');
     }
 }

@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\ApiResponser;
 
 class AuthController extends Controller
 {
+    use ApiResponser;
     public function register(Request $request)
     {
         try {
@@ -36,24 +38,18 @@ class AuthController extends Controller
                 'role_id' => $user->role_id
             ]);
 
-            return response([
+            return $this->successResponse([
                 'user' => $user,
-                'token' => $token,
-                'message' => 'Registrasi berhasil'
-            ], 201);
+                'token' => $token
+            ], 'Registrasi berhasil', 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return response([
-                'message' => 'Data tidak valid',
-                'errors' => $e->errors()
-            ], 422);
+            return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
             \Log::error('Registration error', [
                 'message' => $e->getMessage()
             ]);
-            return response([
-                'message' => 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.'
-            ], 500);
+            return $this->errorResponse('Terjadi kesalahan saat mendaftar. Silakan coba lagi.', 500);
         }
     }
 
@@ -75,16 +71,12 @@ class AuthController extends Controller
 
             if (!$user) {
                 \Log::warning('Login failed - user not found', ['username' => $fields['username']]);
-                return response([
-                    'message' => 'Username atau email tidak ditemukan'
-                ], 401);
+                return $this->errorResponse('Username atau email tidak ditemukan', 401);
             }
 
             if (!Hash::check($fields['password'], $user->password)) {
                 \Log::warning('Login failed - wrong password', ['user_id' => $user->id]);
-                return response([
-                    'message' => 'Password salah'
-                ], 401);
+                return $this->errorResponse('Password salah', 401);
             }
 
             // Create token
@@ -102,26 +94,20 @@ class AuthController extends Controller
                 'role_name' => $user->role ? $user->role->name : 'Unknown'
             ]);
 
-            return response([
+            return $this->successResponse([
                 'user' => $user,
-                'token' => $token,
-                'message' => 'Login berhasil'
-            ], 200);
+                'token' => $token
+            ], 'Login berhasil');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Login validation error', ['errors' => $e->errors()]);
-            return response([
-                'message' => 'Data tidak valid',
-                'errors' => $e->errors()
-            ], 422);
+            return $this->validationErrorResponse($e->errors());
         } catch (\Exception $e) {
             \Log::error('Login error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return response([
-                'message' => 'Terjadi kesalahan pada server. Silakan coba lagi.'
-            ], 500);
+            return $this->errorResponse('Terjadi kesalahan pada server. Silakan coba lagi.', 500);
         }
     }
 
@@ -137,7 +123,7 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         if (!$user) {
-            return response(['message' => 'Unauthorized'], 401);
+            return $this->unauthorizedResponse();
         }
 
         $fields = $request->validate([
@@ -153,9 +139,6 @@ class AuthController extends Controller
         }
         $user->save();
 
-        return response([
-            'message' => 'Profile updated successfully',
-            'user' => $user
-        ]);
+        return $this->successResponse($user, 'Profile updated successfully');
     }
 }

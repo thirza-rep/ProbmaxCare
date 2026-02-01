@@ -19,7 +19,7 @@ use App\Http\Controllers\AuthController;
 // DIAGNOSTIC ROUTES - Test if api.php is loaded
 Route::get('/ping', function () {
     return response()->json([
-        'message' => 'PONG from api.php!',
+        'message' => 'oiikk aping di sini dari api.php!',
         'file' => 'routes/api.php',
         'loaded' => true
     ]);

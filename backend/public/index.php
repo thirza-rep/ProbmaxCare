@@ -70,6 +70,14 @@ $kernel = $app->make(Kernel::class);
 error_log("PUBLIC INDEX: Kernel created");
 
 $request = Request::capture();
+
+// Fix for Vercel/vercel-php: Reset SCRIPT_NAME and PHP_SELF to prevent Symfony
+// from stripping the first segment (e.g., /api) from the path info.
+if (isset($_SERVER['VERCEL_URL'])) {
+    $request->server->set('SCRIPT_NAME', '/index.php');
+    $request->server->set('PHP_SELF', '/index.php');
+}
+
 error_log("PUBLIC INDEX: Request captured - URI: " . $request->getRequestUri() . " | Path: " . $request->getPathInfo());
 
 $response = $kernel->handle($request);

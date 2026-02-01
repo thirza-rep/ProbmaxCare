@@ -7,11 +7,15 @@ use App\Models\User;
 use App\Models\Appointment;
 use App\Models\DailyFeedback;
 
+use App\Traits\ApiResponser;
+
 class AdminController extends Controller
 {
+    use ApiResponser;
+
     public function stats()
     {
-        return response([
+        return $this->successResponse([
             'total_users' => User::count(),
             'total_appointments' => Appointment::count(),
             'total_feedbacks' => DailyFeedback::count(),

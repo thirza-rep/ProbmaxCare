@@ -37,6 +37,15 @@ axiosClient.interceptors.response.use((response) => {
     data: response.data
   });
 
+  // If response has standardized structure { status, data, message }, return just the data
+  if (response.data && response.data.status && response.data.data !== undefined) {
+    return {
+      ...response,
+      data: response.data.data,
+      fullResponse: response.data // Keep full response if needed
+    };
+  }
+
   return response;
 }, (error) => {
   const { response } = error;

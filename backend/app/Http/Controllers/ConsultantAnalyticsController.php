@@ -8,9 +8,11 @@ use App\Models\UserFeedback;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\ApiResponser;
 
 class ConsultantAnalyticsController extends Controller
 {
+    use ApiResponser;
     /**
      * Get all appointments for the authenticated consultant
      */
@@ -27,7 +29,7 @@ class ConsultantAnalyticsController extends Controller
 
         $appointments = $query->get();
 
-        return response()->json($appointments);
+        return $this->successResponse($appointments);
     }
 
     /**
@@ -46,10 +48,7 @@ class ConsultantAnalyticsController extends Controller
 
         $appointment->update($validated);
 
-        return response()->json([
-            'message' => 'Appointment updated successfully',
-            'appointment' => $appointment->load('user:id,username,email')
-        ]);
+        return $this->successResponse($appointment->load('user:id,username,email'), 'Appointment updated successfully');
     }
 
     /**
@@ -60,16 +59,12 @@ class ConsultantAnalyticsController extends Controller
     {
         // Get category distribution from daily feedback
         $categoryDistribution = DailyFeedback::select(
-            DB::raw('CASE 
-                WHEN total_score <= 10 THEN "Normal"
-                WHEN total_score <= 20 THEN "Stres Ringan"
-                WHEN total_score <= 30 THEN "Stres Sedang"
-                ELSE "Stres Berat"
-            END as category'),
+            DB::raw('CASE
+WHEN total_score <= 10 THEN "Normal" WHEN total_score <=20 THEN "Stres Ringan" WHEN total_score <=30 THEN "Stres Sedang"
+    ELSE "Stres Berat" END as category'),
             DB::raw('COUNT(DISTINCT user_id) as count')
-        )
-        ->groupBy('category')
-        ->get();
+        )->groupBy('category')
+            ->get();
 
         // Get mood trends (last 7 days, aggregated)
         $moodTrends = UserFeedback::select(
@@ -77,24 +72,24 @@ class ConsultantAnalyticsController extends Controller
             'selected_mood',
             DB::raw('COUNT(*) as count')
         )
-        ->where('created_at', '>=', now()->subDays(7))
-        ->groupBy('date', 'selected_mood')
-        ->orderBy('date', 'asc')
-        ->get();
+            ->where('created_at', '>=', now()->subDays(7))
+            ->groupBy('date', 'selected_mood')
+            ->orderBy('date', 'asc')
+            ->get();
 
         // Total active students (who have used any feature)
         $activeStudents = User::where('role_id', 3)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereHas('dailyFeedbacks')
-                      ->orWhereHas('userFeedbacks')
-                      ->orWhereHas('appointments');
+                    ->orWhereHas('userFeedbacks')
+                    ->orWhereHas('appointments');
             })
             ->count();
 
         // Total students
         $totalStudents = User::where('role_id', 3)->count();
 
-        return response()->json([
+        return $this->successResponse([
             'category_distribution' => $categoryDistribution,
             'mood_trends' => $moodTrends,
             'active_students' => $activeStudents,
