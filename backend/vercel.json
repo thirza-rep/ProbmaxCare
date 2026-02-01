@@ -3,9 +3,6 @@
     "builds": [
         {
             "src": "/public/index.php",
-            "regions": [
-                "iad1"
-            ],
             "use": "vercel-php@0.7.2"
         }
     ],
