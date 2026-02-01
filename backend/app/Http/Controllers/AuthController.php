@@ -141,4 +141,110 @@ class AuthController extends Controller
 
         return $this->successResponse($user, 'Profile updated successfully');
     }
+
+    // ==========================================
+    // WEB AUTHENTICATION METHODS
+    // ==========================================
+
+    /**
+     * Show login form
+     */
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Show register form
+     */
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+    /**
+     * Handle web login request
+     */
+    public function webLogin(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        // Try to find user by username or email
+        $user = User::where('username', $credentials['username'])
+            ->orWhere('email', $credentials['username'])
+            ->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return back()->withErrors([
+                'username' => 'Username/email atau password salah.',
+            ])->withInput($request->only('username'));
+        }
+
+        // Login user dengan session
+        Auth::login($user, $request->filled('remember'));
+
+        $request->session()->regenerate();
+
+        // Redirect ke dashboard (yang akan redirect ke Vite SPA)
+        return redirect()->intended('/dashboard');
+    }
+
+    /**
+     * Handle web registration request
+     */
+    public function webRegister(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'username' => 'required|string|unique:users,username',
+                'email' => 'required|string|email|unique:users,email',
+                'password' => 'required|string|confirmed|min:6'
+            ]);
+
+            $user = User::create([
+                'username' => $validated['username'],
+                'email' => $validated['email'],
+                'password' => bcrypt($validated['password']),
+                'role_id' => 3 // User role by default
+            ]);
+
+            \Log::info('User registered via web', [
+                'user_id' => $user->id,
+                'username' => $user->username,
+            ]);
+
+            return redirect()
+                ->route('login')
+                ->with('success', 'Registrasi berhasil! Silakan login dengan akun barumu. ✨');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput($request->only('username', 'email'));
+        } catch (\Exception $e) {
+            \Log::error('Web registration error', [
+                'message' => $e->getMessage()
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat mendaftar. Silakan coba lagi.'])
+                ->withInput($request->only('username', 'email'));
+        }
+    }
+
+    /**
+     * Handle web logout request
+     */
+    public function webLogout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
 }
