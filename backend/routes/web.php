@@ -30,9 +30,6 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated Routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
-    Route::get('/logout', [AuthController::class, 'webLogout']); // Also allow GET for redirect
-
     // Dashboard redirect to Vite SPA
     Route::get('/dashboard', function () {
         $user = auth()->user();
@@ -44,3 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return redirect($frontendUrl . '/dashboard?token=' . $token);
     })->name('dashboard');
 });
+
+// Logout routes - outside auth middleware so they work even without session
+Route::post('/logout', [AuthController::class, 'webLogout'])->name('logout');
+Route::get('/logout', [AuthController::class, 'webLogout']);

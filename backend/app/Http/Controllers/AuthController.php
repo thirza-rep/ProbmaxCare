@@ -240,10 +240,16 @@ class AuthController extends Controller
      */
     public function webLogout(Request $request)
     {
-        Auth::logout();
+        // Only logout if user is authenticated via session
+        if (Auth::check()) {
+            Auth::logout();
+        }
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Always invalidate session and regenerate token
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return redirect()->route('login');
     }
