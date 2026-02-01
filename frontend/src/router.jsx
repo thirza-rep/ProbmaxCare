@@ -1,7 +1,4 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Login from "./views/Login";
-import Register from "./views/Register";
-import LandingPage from "./views/LandingPage";
 import Dashboard from "./views/Dashboard";
 import ConsultantSchedule from "./views/ConsultantSchedule";
 import ConsultantAppointments from "./views/ConsultantAppointments";
@@ -14,7 +11,6 @@ import ChatAI from "./views/ChatAI";
 import Profile from "./views/Profile";
 import UserManagement from "./views/UserManagement";
 import DefaultLayout from "./components/DefaultLayout";
-import GuestLayout from "./components/GuestLayout";
 
 const router = createBrowserRouter([
   {
@@ -69,24 +65,6 @@ const router = createBrowserRouter([
         path: '/user-management',
         element: <UserManagement />
       },
-    ]
-  },
-  {
-    path: '/',
-    element: <GuestLayout />,
-    children: [
-      {
-        path: '/home',
-        element: <LandingPage />
-      },
-      {
-        path: '/login',
-        element: <Login />
-      },
-      {
-        path: '/register',
-        element: <Register />
-      }
     ]
   }
 ])

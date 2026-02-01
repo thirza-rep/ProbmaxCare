@@ -64,10 +64,10 @@ axiosClient.interceptors.response.use((response) => {
     localStorage.removeItem('ACCESS_TOKEN');
     localStorage.removeItem('USER_DATA');
 
-    // Only redirect if not already on login page
-    if (!window.location.pathname.includes('/login')) {
-      window.location.href = '/login';
-    }
+    // Redirect to Laravel login page
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    window.location.href = `${backendUrl.replace('/api', '')}/login`;
+    return;
   }
 
   // Handle network errors

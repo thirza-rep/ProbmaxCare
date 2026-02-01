@@ -1,4 +1,4 @@
-import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useStateContext } from "../contexts/ContextProvider";
 import axiosClient from "../axios-client";
 import { useEffect, useState } from "react";
@@ -7,6 +7,20 @@ export default function DefaultLayout() {
   const { user, token, setUser, setToken, notification } = useStateContext();
   const [isOpen, setIsOpen] = useState(false); // Mobile menu state
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Check for token in URL query parameter (from Laravel redirect)
+  useEffect(() => {
+    const urlToken = searchParams.get('token');
+    if (urlToken && !token) {
+      console.log('Token found in URL, saving to localStorage');
+      setToken(urlToken);
+      // Remove token from URL
+      searchParams.delete('token');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams]);
 
   // Fetch user data on mount if we have token but no user data
   useEffect(() => {
@@ -32,7 +46,10 @@ export default function DefaultLayout() {
   }, [location]);
 
   if (!token) {
-    return <Navigate to="/home" />
+    // Redirect to Laravel login
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    window.location.href = `${backendUrl.replace('/api', '')}/login`;
+    return null;
   }
 
   if (!user || !user.username) {
@@ -48,11 +65,14 @@ export default function DefaultLayout() {
 
   const onLogout = (ev) => {
     ev.preventDefault()
-    axiosClient.post('/logout')
-      .then(() => {
-        setUser({})
-        setToken(null)
-      })
+
+    // Clear local state
+    setUser({})
+    setToken(null)
+
+    // Redirect to Laravel logout (which will redirect to login)
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+    window.location.href = `${backendUrl.replace('/api', '')}/logout`;
   }
 
   const navLinks = [
@@ -96,8 +116,8 @@ export default function DefaultLayout() {
                       key={link.path}
                       to={link.path}
                       className={`px-5 py-2.5 rounded-2xl text-sm font-black transition-all duration-300 flex items-center gap-2.5 ${location.pathname === link.path
-                          ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.05]'
-                          : 'text-gray-500 hover:bg-gray-50 hover:text-primary'
+                        ? 'bg-primary text-white shadow-xl shadow-primary/30 scale-[1.05]'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-primary'
                         }`}
                     >
                       <span className="text-xl">{link.icon}</span>
